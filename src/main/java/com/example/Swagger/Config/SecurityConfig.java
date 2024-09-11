@@ -10,6 +10,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.ContentSecurityPolicyHeaderWriter;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 public class SecurityConfig
 {
@@ -24,27 +26,26 @@ public class SecurityConfig
         http
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**"/*, "/h2-console/**"*/).permitAll()
+                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                                 .anyRequest().authenticated()
                 )
+                .oauth2Login(withDefaults())
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwt ->
                                 jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
+                )
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .headers(headers ->
+                        headers
+                                .addHeaderWriter(new ContentSecurityPolicyHeaderWriter("frame-ancestors 'self'"))
                 );
-//                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
-//                .headers(headers ->
-//                        headers
-//                                .addHeaderWriter(new ContentSecurityPolicyHeaderWriter("frame-ancestors 'self'"))
-//                );
         return http.build();
     }
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter()
     {
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        // Custom JWT to Authentication conversion logic can be added here
-        return jwtAuthenticationConverter;
+        return new JwtAuthenticationConverter();
     }
 }
