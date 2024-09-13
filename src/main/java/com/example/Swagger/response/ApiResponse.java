@@ -1,4 +1,4 @@
-package com.example.Swagger.Exception;
+package com.example.Swagger.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
